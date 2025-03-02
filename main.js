@@ -1,5 +1,10 @@
 import puppeteer from "puppeteer";
 import login from './modules/login.js'
+import dotenv from 'dotenv';
+dotenv.config();
+const email = process.env.LOGIN_EMAIL;
+const password = process.env.LOGIN_PASSWORD;
+
 (async ()=>{
     const browser = await puppeteer.launch({headless:false})
     const page = await browser.newPage();
@@ -7,7 +12,7 @@ import login from './modules/login.js'
     await page.goto("https://www.pixiv.net/");
 
     try{
-        await login(page);
+        await login(page,email,password);
     } catch(e){
         console.log(e);
     } finally{

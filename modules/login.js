@@ -1,6 +1,6 @@
 import delay from "../utils/delay.js";
 
-async function login(page) {  
+async function login(page,email,password) {  
   await page.waitForSelector('.signup-form', { timeout: 10000 }); // 10-second timeout
 
   const loginButtonLocator = page.locator('a[href*="login"]'); // Example: Looks for <a> tags with "login" in the href
@@ -18,17 +18,16 @@ async function login(page) {
   const loginInput = 'input[type="text"]'
   const passInput = 'input[type="password"]'
 
-  await page.type(loginInput,"example");
-  await page.type(passInput,"123456");
+  await page.type(loginInput,email);
+  await page.type(passInput,password);
 
+  await page.waitForSelector('button[type="submit"]');
   const submitBtn = await page.$$('button[type="submit"]')
+  await submitBtn[4].click();
 
-  const [response] = await Promise.all([
-    page.waitForNavigation(),
-    submitBtn[4].click()
-  ]);
+  await delay(10000);
 
-  // await delay(10000)
+  
 
 }
 
