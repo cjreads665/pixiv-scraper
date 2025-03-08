@@ -1,3 +1,4 @@
+import { timeout } from "puppeteer";
 import delay from "../utils/delay.js";
 
 async function login(page,email,password) {  
@@ -19,15 +20,24 @@ async function login(page,email,password) {
   const passInput = 'input[type="password"]'
 
   await page.type(loginInput,email);
+  await page.mouse.move(100, 200);
   await page.type(passInput,password);
+  await page.mouse.move(200, 100);
+
 
   await page.waitForSelector('button[type="submit"]');
-  const submitBtn = await page.$$('button[type="submit"]')
-  await submitBtn[4].click();
 
-  await delay(10000);
+  delay(2000)
+  // const submitBtn = await page.$$('button[type="submit"]')
+  const submitBtn = await page.waitForSelector(`::-p-xpath(//button[normalize-space()='Log In'])`)
+  await submitBtn.click();
+  // await submitBtn[4].click();
 
-  
+  await page.evaluate(() => window.scrollBy(0, 300));
+
+  // await delay(25000);
+
+  await page.waitForSelector('input[placeholder="Search works"]',{timeout:50000})
 
 }
 

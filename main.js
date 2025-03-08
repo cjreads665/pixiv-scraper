@@ -1,9 +1,15 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-extra";
 import login from './modules/login.js'
 import dotenv from 'dotenv';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import goToProfile from "./modules/goToProfile.js"
+
+puppeteer.use(StealthPlugin())
+
 dotenv.config();
 const email = process.env.LOGIN_EMAIL;
 const password = process.env.LOGIN_PASSWORD;
+const profileLink = process.env.PROFILE_URL;
 
 (async ()=>{
     const browser = await puppeteer.launch({headless:false})
@@ -13,6 +19,7 @@ const password = process.env.LOGIN_PASSWORD;
 
     try{
         await login(page,email,password);
+        // await goToProfile(page,profileLink);
     } catch(e){
         console.log(e);
     } finally{
