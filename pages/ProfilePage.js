@@ -25,8 +25,8 @@ export default class ProfilePage extends BasePage{
     }
 
     async getAllBookmarksInPage(){
-
-        const bookmarks = [];
+        await this.clickBookmarks();
+        
     }
 
 
