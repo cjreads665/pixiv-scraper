@@ -60,6 +60,10 @@ export default class ProfilePage extends BasePage{
              * console:
              * document.querySelectorAll('div[dir="vert"]')[0].children[0]
              * this is selecting the previews alright
+             * https://stackoverflow.com/questions/69501961/cant-download-image-from-a-website-with-selenium-it-gives-403-error
+             * 
+             * HELL YEAH!! FOUND THE SOLUTION FROM THE ABOVE STACKOVERFLOW. 
+             * just pass referer as https://www.pixiv.net/ to the img srcs and you are good to go
              */
             this.clickShowAll()
 
