@@ -34,9 +34,15 @@ export default class ProfilePage extends BasePage{
 
     async getAllBookmarksInPage(){
         await this.clickBookmarks();
-        delay(2000)
         await this.page.waitForSelector('li')
-        // await this.page.$$('li')[0].click()
+        await delay(3000) //added delay for other images to load
+        const listItems = await this.page.$$('li');
+        if (listItems.length > 0) {
+            await listItems[1].click();
+        } else {
+            throw new Error("No list items found");
+        }
+        await delay(10000)
     }
 
 
