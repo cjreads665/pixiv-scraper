@@ -19,4 +19,6 @@ export default class BasePage{
         await this.page.waitForSelector(`xpath=${xpath}`, { timeout: 10000 }); // Ensure the element is present
         return this.page.locator(`xpath=${xpath}`);
     }
+
+
 }

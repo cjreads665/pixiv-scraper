@@ -31,7 +31,7 @@ export default class LoginPage extends BasePage {
 
     async verifyLogin() {
         await this.page.evaluate(() => window.scrollBy(0, 300));
-        await delay(25000);
+        await delay(3000);
         await this.page.waitForSelector('input[placeholder="Search works"]', { timeout: 50000 })
     }
 

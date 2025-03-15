@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import goToProfile from "./modules/goToProfile.js"
 import LoginPage from "./pages/LoginPage.js";
+import delay from "./utils/delay.js";
+import ProfilePage from "./pages/ProfilePage.js";
 
 puppeteer.use(StealthPlugin())
 
@@ -21,12 +23,16 @@ const profileLink = process.env.PROFILE_URL;
     
     // creating objects
     const loginPage = new LoginPage(page)
+    const profilePage = new ProfilePage(page)
 
     try{
-        await loginPage.login(email,password)
+        await loginPage.login(email,password);
+        await profilePage.goToProfile(profileLink);
+        await delay(8000)
     } catch(e){
         console.log(e);
     } finally{
+        console.log('Closing browser');
         await browser.close();
     }
 
