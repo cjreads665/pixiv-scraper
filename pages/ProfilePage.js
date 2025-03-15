@@ -32,7 +32,7 @@ export default class ProfilePage extends BasePage {
         // await this.page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 })
     }
 
-    async fetchSrc() {
+    async fetchSrcForReadingWorks() {
         /**
          * const puppeteer = require('puppeteer');
 
@@ -78,7 +78,9 @@ export default class ProfilePage extends BasePage {
             const showAllBtn = await this.selectXpath("//div[contains(text(), 'Reading works')]");
             if (showAllBtn) {
                 await showAllBtn.click();
+                await delay(3000)
             }
+            await this.fetchSrcForReadingWorks()
         } catch (e) {
             console.log("Show all button not found");
         }
@@ -110,8 +112,8 @@ export default class ProfilePage extends BasePage {
             this.clickReadingWorks()
             await delay(5000)
 
-            await this.fetchSrc()
-            await delay(5000)
+            // await this.fetchSrc()
+            // await delay(5000)
         } else {
             throw new Error("No list items found");
         }
