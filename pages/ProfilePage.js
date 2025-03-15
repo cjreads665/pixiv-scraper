@@ -9,7 +9,6 @@ export default class ProfilePage extends BasePage{
 
 
     async verifyProfile(profileLink) { 
-        // await this.verifyElementPresence('a[href="/en/users/106094984"]')
         await this.verifyElementPresence(`a[href="${this.urlPath}"]`) //checks out home
     }
 
