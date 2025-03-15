@@ -117,7 +117,7 @@ export default class ProfilePage extends BasePage {
 
             }
         } catch (e) {
-            console.log(e); //uncomment for debugging
+            // console.log(e); //uncomment for debugging
             console.log("Reading Works button not found. Might be a single image");
             
         }
