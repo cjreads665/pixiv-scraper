@@ -1,4 +1,5 @@
 import {getUrlPath} from "../utils/commonMethods.js";
+import delay from "../utils/delay.js";
 import BasePage from "./BasePage.js";
 
 export default class ProfilePage extends BasePage{
@@ -21,6 +22,7 @@ export default class ProfilePage extends BasePage{
 
     async goToProfile() {
         await this.page.goto(this.profileLink);
+        delay(2000)
         await this.verifyProfile();
     }
 
@@ -32,7 +34,9 @@ export default class ProfilePage extends BasePage{
 
     async getAllBookmarksInPage(){
         await this.clickBookmarks();
-        await this.page.$$('li')[0].click()
+        delay(2000)
+        await this.page.waitForSelector('li')
+        // await this.page.$$('li')[0].click()
     }
 
 
