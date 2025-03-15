@@ -74,7 +74,8 @@ export default class ProfilePage extends BasePage {
         try {
             // await this.page.set
             // await delay(3000)
-            const showAllBtn = await this.page.waitForSelector(`::-p-xpath(//div[contains(text(), 'Reading works')])`, { timeout: 5000 });
+            // const showAllBtn = await this.page.waitForSelector(`::-p-xpath(//div[contains(text(), 'Reading works')])`, { timeout: 5000 });
+            const showAllBtn = await this.selectXpath("//div[contains(text(), 'Reading works')]");
             if (showAllBtn) {
                 await showAllBtn.click();
             }
