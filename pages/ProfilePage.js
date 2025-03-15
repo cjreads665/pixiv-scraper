@@ -1,4 +1,4 @@
-import { getUrlPath } from "../utils/commonMethods.js";
+import { autoScroll, getUrlPath } from "../utils/commonMethods.js";
 import delay from "../utils/delay.js";
 import BasePage from "./BasePage.js";
 
@@ -57,8 +57,9 @@ export default class ProfilePage extends BasePage {
   await browser.close();
 })();
          */
-
+        await this.page.waitForSelector('div[dir="vert"]')
         const previewContainer = await this.page.$('div[dir="vert"]')
+        await autoScroll(this.page)
         const firstChild = await previewContainer.$(':first-child')
         const images = await firstChild?.$$('img') ?? [];
         console.log('Images found:', images.length);
@@ -69,6 +70,26 @@ export default class ProfilePage extends BasePage {
 
 
     }
+
+
+    async fetchSrcForShowAll() {
+        // Scroll to trigger image loading
+        // await this.page.evaluate(() => window.scrollBy(0, document.body.scrollHeight-400));
+        // await this.page.waitForSelector('div[role="presentation"]')
+        // await delay(60000)
+        // Wait for network idle
+        // await autoScroll(this.page)
+        await this.page.waitForSelector('div[role="presentation"]')
+        const previewContainer = await this.page.$('div[role="presentation"]')
+        const images = await previewContainer?.$$('img') ?? [];
+        console.log('Images found:', images.length);
+        for (const img of images) {
+            const src = await img.evaluate(el => el.src); // Get the src attribute
+            console.log('Image src:', src
+            );
+        }
+    }
+
 
     async clickReadingWorks() {
         try {
@@ -82,8 +103,25 @@ export default class ProfilePage extends BasePage {
             }
             await this.fetchSrcForReadingWorks()
         } catch (e) {
-            console.log("Show all button not found");
+            console.log("Reading Works button not found");
         }
+    }
+
+    async clickShowAll() {
+        try {
+            const showAllBtn = await this.page.waitForSelector(`::-p-xpath(//div[contains(text(), 'Show all')])`, { timeout: 5000 });
+            if (showAllBtn) {
+                await delay(2000)
+                await showAllBtn.click();
+                await autoScroll(this.page)
+
+            }
+        } catch (e) {
+            console.log(e); //uncomment for debugging
+            console.log("Reading Works button not found. Might be a single image");
+            
+        }
+        await this.fetchSrcForShowAll();
     }
 
     async getAllBookmarksInPage() {
@@ -92,7 +130,7 @@ export default class ProfilePage extends BasePage {
         await delay(3000) //added delay for other images to load
         const listItems = await this.page.$$('li');
         if (listItems.length > 0) {
-            await listItems[3].click();
+            await listItems[4].click();
             /**
              * show all is not present in some multi-image arts
              * instead of that, we show 'reading works' -> which opens the image view of pixiv.
@@ -109,7 +147,8 @@ export default class ProfilePage extends BasePage {
              * HELL YEAH!! FOUND THE SOLUTION FROM THE ABOVE STACKOVERFLOW. 
              * just pass referer as https://www.pixiv.net/ to the img srcs and you are good to go
              */
-            this.clickReadingWorks()
+            await this.clickReadingWorks()
+            await this.clickShowAll()
             await delay(5000)
 
             // await this.fetchSrc()
