@@ -1,16 +1,16 @@
-import {getUrlPath} from "../utils/commonMethods.js";
+import { getUrlPath } from "../utils/commonMethods.js";
 import delay from "../utils/delay.js";
 import BasePage from "./BasePage.js";
 
-export default class ProfilePage extends BasePage{
-    constructor(page,profileLink) {
+export default class ProfilePage extends BasePage {
+    constructor(page, profileLink) {
         super(page)
         this.page = page;
-        this.profileLink = profileLink        
+        this.profileLink = profileLink
     }
 
 
-    async verifyProfile() { 
+    async verifyProfile() {
         let urlPath = await getUrlPath(this.profileLink);
         await this.verifyElementPresence(`a[href="${urlPath}"]`) //checks out home
     }
@@ -26,13 +26,51 @@ export default class ProfilePage extends BasePage{
         await this.verifyProfile();
     }
 
-    async clickBookmarks(){
+    async clickBookmarks() {
         let urlPath = await getUrlPath(this.profileLink);
         await this.page.click(`a[href="${urlPath}/bookmarks/artworks"]`)
         // await this.page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 })
     }
 
-    async clickShowAll(){
+    async fetchSrc() {
+        /**
+         * const puppeteer = require('puppeteer');
+
+(async () => {
+  const browser = await puppeteer.launch({ headless: false });
+  const page = await browser.newPage();
+  await page.goto('https://www.example.com');
+
+  // Execute JavaScript in the browser context
+  const imageSrcs = await page.evaluate(() => {
+    const firstChild = document.querySelectorAll('div[dir="vert"]')[0].children[0];
+    const images = firstChild.querySelectorAll('img');
+    return Array.from(images).map(img => img.src); // Extract src of all images
+  });
+
+  if (imageSrcs.length > 0) {
+    console.log('Images found:', imageSrcs);
+  } else {
+    console.log('No images found.');
+  }
+
+  await browser.close();
+})();
+         */
+
+        const previewContainer = await this.page.$('div[dir="vert"]')
+        const firstChild = await previewContainer.$(':first-child')
+        const images = await firstChild?.$$('img') ?? [];
+        console.log('Images found:', images.length);
+        for (const img of images) {
+            const src = await img.evaluate(el => el.src); // Get the src attribute
+            console.log('Image src:', src);
+        }
+
+
+    }
+
+    async clickReadingWorks() {
         try {
             // await this.page.set
             // await delay(3000)
@@ -45,7 +83,7 @@ export default class ProfilePage extends BasePage{
         }
     }
 
-    async getAllBookmarksInPage(){
+    async getAllBookmarksInPage() {
         await this.clickBookmarks();
         await this.page.waitForSelector('li')
         await delay(3000) //added delay for other images to load
@@ -60,13 +98,18 @@ export default class ProfilePage extends BasePage{
              * console:
              * document.querySelectorAll('div[dir="vert"]')[0].children[0]
              * this is selecting the previews alright
+             * const firstChild = document.querySelectorAll('div[dir="vert"]')[0].children[0];
+                const images = firstChild.querySelectorAll('img'); // Select all <img> elements within the first child
+             * 
              * https://stackoverflow.com/questions/69501961/cant-download-image-from-a-website-with-selenium-it-gives-403-error
              * 
              * HELL YEAH!! FOUND THE SOLUTION FROM THE ABOVE STACKOVERFLOW. 
              * just pass referer as https://www.pixiv.net/ to the img srcs and you are good to go
              */
-            this.clickShowAll()
+            this.clickReadingWorks()
+            await delay(5000)
 
+            await this.fetchSrc()
             await delay(5000)
         } else {
             throw new Error("No list items found");
