@@ -3,29 +3,36 @@ import BasePage from "./BasePage.js";
 
 export default class ProfilePage extends BasePage{
     constructor(page,profileLink) {
+        super(page)
         this.page = page;
-        this.urlPath = getUrlPath(profileLink);
+        this.profileLink = profileLink        
     }
 
 
-    async verifyProfile(profileLink) { 
-        await this.verifyElementPresence(`a[href="${this.urlPath}"]`) //checks out home
+    async verifyProfile() { 
+        let urlPath = await getUrlPath(this.profileLink);
+        await this.verifyElementPresence(`a[href="${urlPath}"]`) //checks out home
     }
 
+    // async test(){
+    //     console.log(getUrlPath(profileLink));
 
-    async goToProfile(profileLink) {
-        await this.page.goto(profileLink);
-        await this.verifyProfile(profileLink);
+    // }
+
+    async goToProfile() {
+        await this.page.goto(this.profileLink);
+        await this.verifyProfile();
     }
 
     async clickBookmarks(){
-        await this.page.click(`a[href="${this.urlPath}/bookmarks/artworks"]`)
-        await this.page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 })
+        let urlPath = await getUrlPath(this.profileLink);
+        await this.page.click(`a[href="${urlPath}/bookmarks/artworks"]`)
+        // await this.page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 })
     }
 
     async getAllBookmarksInPage(){
         await this.clickBookmarks();
-        
+        await this.page.$$('li')[0].click()
     }
 
 

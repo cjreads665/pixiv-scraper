@@ -6,6 +6,7 @@ import goToProfile from "./modules/goToProfile.js"
 import LoginPage from "./pages/LoginPage.js";
 import delay from "./utils/delay.js";
 import ProfilePage from "./pages/ProfilePage.js";
+import { getUrlPath } from "./utils/commonMethods.js";
 
 puppeteer.use(StealthPlugin())
 
@@ -15,6 +16,7 @@ const email = process.env.LOGIN_EMAIL;
 const password = process.env.LOGIN_PASSWORD;
 const profileLink = process.env.PROFILE_URL;
 
+
 (async ()=>{
     const browser = await puppeteer.launch({headless:false})
     const page = await browser.newPage();
@@ -23,12 +25,13 @@ const profileLink = process.env.PROFILE_URL;
     
     // creating objects
     const loginPage = new LoginPage(page)
-    const profilePage = new ProfilePage(page)
+    const profilePage = new ProfilePage(page,profileLink)
 
     try{
         await loginPage.login(email,password);
-        await profilePage.goToProfile(profileLink);
-        await delay(8000)
+        await profilePage.goToProfile();
+        await profilePage.getAllBookmarksInPage()
+        // await delay(8000)
     } catch(e){
         console.log(e);
     } finally{
