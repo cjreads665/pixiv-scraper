@@ -15,7 +15,8 @@ export default class BasePage{
         await this.page.waitForSelector(selector);
     }
 
-    async selectXpath(xpath){
-        await this.page.waitForSelector(`::-p-xpath(${xpath})`)
+    async selectXpath(xpath) {
+        await this.page.waitForSelector(`xpath=${xpath}`, { timeout: 10000 }); // Ensure the element is present
+        return this.page.locator(`xpath=${xpath}`);
     }
 }
