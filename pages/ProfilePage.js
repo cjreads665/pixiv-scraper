@@ -6,9 +6,14 @@ export default class ProfilePage extends BasePage {
     constructor(page, profileLink) {
         super(page)
         this.page = page;
-        this.profileLink = profileLink
+        this.profileLink = profileLink;
+        this.imgArray = [];
     }
 
+    async getImgArray(){
+
+        return await this.imgArray;
+    }
 
     async verifyProfile() {
         let urlPath = await getUrlPath(this.profileLink);
@@ -66,6 +71,7 @@ export default class ProfilePage extends BasePage {
         for (const img of images) {
             const src = await img.evaluate(el => el.src); // Get the src attribute
             console.log('Image src:', src);
+            this.imgArray.push(src);
         }
 
 
@@ -87,6 +93,7 @@ export default class ProfilePage extends BasePage {
             const src = await img.evaluate(el => el.src); // Get the src attribute
             console.log('Image src:', src
             );
+            this.imgArray.push(src);
         }
     }
 
@@ -116,6 +123,11 @@ export default class ProfilePage extends BasePage {
                 await autoScroll(this.page)
 
             }
+        /**
+         * handling the single image case inside showall.
+         * so when there is single image, we skip scrolling
+         * and extract the image srcs directly
+         */
         } catch (e) {
             // console.log(e); //uncomment for debugging
             console.log("Reading Works button not found. Might be a single image");
@@ -130,7 +142,7 @@ export default class ProfilePage extends BasePage {
         await delay(3000) //added delay for other images to load
         const listItems = await this.page.$$('li');
         if (listItems.length > 0) {
-            await listItems[4].click();
+            await listItems[0].click();
             /**
              * show all is not present in some multi-image arts
              * instead of that, we show 'reading works' -> which opens the image view of pixiv.
@@ -150,7 +162,8 @@ export default class ProfilePage extends BasePage {
             await this.clickReadingWorks()
             await this.clickShowAll()
             await delay(5000)
-
+            console.log(await this.getImgArray());
+            
             // await this.fetchSrc()
             // await delay(5000)
         } else {

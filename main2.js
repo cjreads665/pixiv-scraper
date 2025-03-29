@@ -14,7 +14,7 @@ puppeteer.use(StealthPlugin())
 dotenv.config();
 const email = process.env.LOGIN_EMAIL;
 const password = process.env.LOGIN_PASSWORD;
-const profileLink = process.env.PROFILE_URL;
+const profileLink = process.env.PROFILE_URL_TEST;
 
 
 (async ()=>{
