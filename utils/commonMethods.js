@@ -35,3 +35,10 @@ export async function autoScroll(page){
         });
     });
 }
+
+
+export function getTotalImg(text) {
+    const totalImages = text.split('/')[1]; // Extract "2" from "1/2"
+    console.log(`Total images: ${totalImages}`); // Output: "Total images: 2"
+    return totalImages;
+}
