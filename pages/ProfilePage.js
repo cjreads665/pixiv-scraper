@@ -164,11 +164,29 @@ export default class ProfilePage extends BasePage {
         await this.fetchSrcForShowAll();
     }
 
-
+async clickSpoilerShow(){
+    //sometimes pixiv asks for confirmation for spoilers art
+    const buttons = await this.page.$$('button');
+    for (const button of buttons) {
+        const buttonText = await button.evaluate(el => el.textContent.trim());
+        if (buttonText === 'Show') {
+            await button.click();
+            console.log("Clicked the 'Show' button");
+            break;
+        }
+    }
+}
 
     async fetchOnlySrc() {
         await delay(2000)
+        await this.clickSpoilerShow()
         console.log("waiting for preview");
+
+        const canvasEl = await this.page.$('canvas')
+        if(canvasEl){
+            console.log("Canvas element detected. Skipping fetchOnlySrc.");
+            return; //skip the function
+        }
 
         const previewContainer = await this.page.$('div[role="presentation"]')
         await this.page.waitForSelector('div[role="presentation"] img')
@@ -213,9 +231,9 @@ export default class ProfilePage extends BasePage {
         await this.clickBookmarks();
         await this.page.waitForSelector('li')
         await delay(3000) //added delay for other images to load
-        const listItems = await this.page.$$('li');
+        let listItems = await this.page.$$('li');
         if (listItems.length > 0) {
-            await listItems[29].click();
+
             /**
              * show all is not present in some multi-image arts
              * instead of that, we show 'reading works' -> which opens the image view of pixiv.
@@ -242,11 +260,42 @@ export default class ProfilePage extends BasePage {
              */
             // await this.clickReadingWorks()
             // await this.clickShowAll()
-            await this.fetchOnlySrc()
-            await delay(5000)
+            for(let i=1;i<listItems.length;i++){
+            // Re-query the list item to ensure it's still valid
+            listItems = await this.page.$$('li');
+            const listItem = listItems[i];
+            if (!listItem) {
+                console.log(`List item at index ${i} is no longer available`);
+                continue;
+            }
+            console.log(`Clicking list item at index ${i}`);
+            
+
+            await listItem.click();
+
+
+             // Wait for navigation or content update
+             //this is for the deleted or private artworks. we will be skipping those
+            //  try {
+            //     await Promise.race([
+            //         this.page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 5000 }),
+            //         this.page.waitForSelector('div[role="presentation"]', { timeout: 5000 }) // Wait for specific content
+            //     ]);
+            //     console.log(`Action detected for list item at index ${i}`);
+            // } catch (e) {
+            //     console.log(`No action detected for list item at index ${i}. Skipping...`);
+            //     continue; // Skip to the next list item
+            // }
+
+
+
+            await this.fetchOnlySrc();
+            await delay(2000);
             console.log(await this.getImgArray());
             await this.page.goBack();
-            delay(3000)
+            await delay(3000);
+            }
+
             // await this.fetchSrc()
             // await delay(5000)
         } else {
