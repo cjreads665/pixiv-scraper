@@ -8,6 +8,7 @@ export default class ProfilePage extends BasePage {
         this.page = page;
         this.profileLink = profileLink;
         this.imgArray = [];
+        this.detachedElements = []
     }
 
     async getImgArray() {
@@ -54,6 +55,9 @@ export default class ProfilePage extends BasePage {
         return totalImages;
     }
 
+async detachedElementcollection(){
+    return this.detachedElements
+}
 
 async getTotalWorks(){
     await delay(2000)
@@ -266,11 +270,11 @@ async getTotalWorks(){
         let totalWorks = await this.getTotalWorks();
         let numberOfPages = Math.ceil(totalWorks / 48); // Divide totalWorks by 48 and round up to get the number of pages
 
+        let currentUrl = await this.page.url();
 for(let j=1;j<=numberOfPages;j++){
-    let currentUrl = await this.page.url();
-    console.log("Current URL: " + currentUrl);
     let newUrl = currentUrl.concat(`?p=${j}`)
     await this.page.goto(newUrl)
+    console.log("Current URL: " + newUrl);
     console.log(`number of pages: ${numberOfPages}`);
     console.log(`total works: ${totalWorks}`);
     
@@ -311,12 +315,14 @@ for(let j=1;j<=numberOfPages;j++){
             const listItem = listItems[i];
             if (!listItem) {
                 console.log(`List item at index ${i} and page ${j} is no longer available`);
-                console.log(`Skipping list item at index ${i} and page ${j} due to unavailability.`);
+                let k = `Skipping list item at index ${i} and page ${j} due to unavailability.`
+                console.log(k);
+
                 listItems = await this.page.$$('li'); // Re-query the list items to ensure the loop continues correctly
                 continue;
             }
             console.log(`Clicking list item at index ${i} and page ${j}`);
-            console.log(`number of list items: ${listItems.length}`);
+            console.log(`number of list items in this page: ${listItems.length}`);
             
 
             await listItem.click();
@@ -331,6 +337,7 @@ for(let j=1;j<=numberOfPages;j++){
         const imgArray = await this.getImgArray();
         if (imgArray.length > 0) {
             console.log("Last image in array: " + imgArray[imgArray.length - 1]);
+            console.log("detached elements: " + await this.detachedElements.length);
         } else {
             console.log("Image array is empty.");
         }
