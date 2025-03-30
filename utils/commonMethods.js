@@ -42,3 +42,9 @@ export function getTotalImg(text) {
     console.log(`Total images: ${totalImages}`); // Output: "Total images: 2"
     return totalImages;
 }
+
+export function parseNumberStringWithComma(numberString) {
+    // Remove commas and parse the number
+    const parsedNumber = parseFloat(numberString.replace(/,/g, ""));
+    return parsedNumber;
+}
