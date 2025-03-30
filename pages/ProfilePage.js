@@ -246,7 +246,21 @@ export default class ProfilePage extends BasePage {
         /**
          * get the preview span -> if it is present, use a function
          */
-        const src = await img.evaluate(el => el.src); // Get the src attribute
+        // const src = await img.evaluate(el => el.src); // Get the src attribute
+        let src = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                src = await img.evaluate(el => el.src);
+                if (src) break; // Exit the loop if src is successfully fetched
+            } catch (e) {
+                console.log(`Attempt ${attempt + 1} failed. Retrying...`);
+                await delay(1000); // Wait for 1 second before retrying
+            }
+        }
+        if (!src) {
+            console.log("Failed to fetch image src after multiple attempts. Skipping...");
+            return;
+        }
         // console.log('Original Image src:', src); //for debugging
         if (count == 0) {
             this.imgArray.push(src);
