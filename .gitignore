@@ -50,6 +50,7 @@ downloaded_images
 
 # Optional npm cache directory
 .npm
+imageUrls.json
 
 # Optional eslint cache
 .eslintcache

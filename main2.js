@@ -2,7 +2,6 @@ import puppeteer from "puppeteer-extra";
 import login from './modules/login.js'
 import dotenv from 'dotenv';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import goToProfile from "./modules/goToProfile.js"
 import LoginPage from "./pages/LoginPage.js";
 import delay from "./utils/delay.js";
 import ProfilePage from "./pages/ProfilePage.js";

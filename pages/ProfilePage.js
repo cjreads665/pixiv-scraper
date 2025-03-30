@@ -201,12 +201,17 @@ export default class ProfilePage extends BasePage {
             await this.page.goBack();
 
             return; //skip the function
-        } else if (!previewContainer) {
-            console.log("Preview container not found. Skipping fetchOnlySrc.");
+        } 
+
+        try{
+            await this.page.waitForSelector('div[role="presentation"] img', { timeout: 10000 });
+            console.log("Preview Container Found! Proceeding to fetch image srcs.");
+        } catch (error) {
+            console.log("Preview Container not found. Skipping fetchOnlySrc.");
             return; //skip the function
         }
 
-        await this.page.waitForSelector('div[role="presentation"] img')
+        // await this.page.waitForSelector('div[role="presentation"] img')
         const img = await previewContainer?.$('img');
         const artName = await this.page.$('h1');
 
@@ -278,9 +283,9 @@ export default class ProfilePage extends BasePage {
             console.log(`number of pages: ${numberOfPages}`);
             console.log(`total works: ${totalWorks}`);
 
-            await this.page.waitForSelector('li')
+            await this.page.waitForSelector('li[size="1"]')
             await delay(3000) //added delay for other images to load
-            let listItems = await this.page.$$('li');
+            let listItems = await this.page.$$('li[size="1"]');
             if (listItems.length > 0) {
 
                 /**
@@ -309,9 +314,9 @@ export default class ProfilePage extends BasePage {
                 */
                 // await this.clickReadingWorks()
                 // await this.clickShowAll()
-                for (let i = 1; i < listItems.length; i++) {
+                for (let i = 0; i < listItems.length; i++) {
                     // Re-query the list item to ensure it's still valid
-                    listItems = await this.page.$$('li');
+                    listItems = await this.page.$$('li[size="1"]');
                     const listItem = listItems[i];
                     if (!listItem) {
                         console.log(`List item at index ${i} and page ${j} is no longer available`);
