@@ -10,7 +10,7 @@ export default class ProfilePage extends BasePage {
         this.imgArray = [];
     }
 
-    async getImgArray(){
+    async getImgArray() {
 
         return await this.imgArray;
     }
@@ -42,14 +42,14 @@ export default class ProfilePage extends BasePage {
         const text = await page.$eval(
             '[aria-label="Preview"]', //this is the count span
             (el) => el.textContent.trim() // Returns "1/2" or similar
-          );
-          if(text){
+        );
+        if (text) {
             const totalImages = text.split('/')[1]; // Extract "2" from "1/2"
             console.log(`Total images: ${totalImages}`); // Output: "Total images: 2"
-          } else{
+        } else {
             console.log("no preview count found");
-            
-          }
+
+        }
 
         return totalImages;
     }
@@ -132,13 +132,13 @@ export default class ProfilePage extends BasePage {
                 await readingWorksBtn.click();
                 await delay(3000)
 
-                
+
             }
             await this.fetchSrcForReadingWorks()
         } catch (e) {
             console.log("Reading Works button not found");
             console.log(e);
-            
+
         }
     }
 
@@ -151,31 +151,31 @@ export default class ProfilePage extends BasePage {
                 await autoScroll(this.page)
 
             }
-        /**
-         * handling the single image case inside showall.
-         * so when there is single image, we skip scrolling
-         * and extract the image srcs directly
-         */
+            /**
+             * handling the single image case inside showall.
+             * so when there is single image, we skip scrolling
+             * and extract the image srcs directly
+             */
         } catch (e) {
             // console.log(e); //uncomment for debugging
             console.log("Show All button not found. Might be a single image");
-            
+
         }
         await this.fetchSrcForShowAll();
     }
 
-async clickSpoilerShow(){
-    //sometimes pixiv asks for confirmation for spoilers art
-    const buttons = await this.page.$$('button');
-    for (const button of buttons) {
-        const buttonText = await button.evaluate(el => el.textContent.trim());
-        if (buttonText === 'Show') {
-            await button.click();
-            console.log("Clicked the 'Show' button");
-            break;
+    async clickSpoilerShow() {
+        //sometimes pixiv asks for confirmation for spoilers art
+        const buttons = await this.page.$$('button');
+        for (const button of buttons) {
+            const buttonText = await button.evaluate(el => el.textContent.trim());
+            if (buttonText === 'Show') {
+                await button.click();
+                console.log("Clicked the 'Show' button");
+                break;
+            }
         }
     }
-}
 
     async fetchOnlySrc() {
         await delay(2000)
@@ -183,43 +183,65 @@ async clickSpoilerShow(){
         console.log("waiting for preview");
 
         const canvasEl = await this.page.$('canvas')
-        if(canvasEl){
+        const previewContainer = await this.page.$('div[role="presentation"]')
+        if (canvasEl) {
             console.log("Canvas element detected. Skipping fetchOnlySrc.");
+            return; //skip the function
+        } else if(!previewContainer){
+            console.log("Preview container not found. Skipping fetchOnlySrc.");
             return; //skip the function
         }
 
-        const previewContainer = await this.page.$('div[role="presentation"]')
         await this.page.waitForSelector('div[role="presentation"] img')
         const img = await previewContainer?.$('img');
-        let count =0;
+        const artName = await this.page.$('h1');
+
+        if(artName){
+            const artNameText = await artName.evaluate(el => el.textContent.trim());
+            console.log(`Art name: ${artNameText}`);
+        } else{
+            console.log("Art name not found. check index and find the image manually");
+        }
+        /**
+         * for index 19, we are getting:
+         * TypeError: Cannot read properties of null (reading 'evaluate')
+    at ProfilePage.fetchOnlySrc (file:///home/cj/Desktop/scripts/pixiv-scraper/pages/ProfilePage.js:198:43)
+    at async ProfilePage.getAllBookmarksInPage (file:///home/cj/Desktop/scripts/pixiv-scraper/pages/ProfilePage.js:300:17)
+    at async file:///home/cj/Desktop/scripts/pixiv-scraper/main2.js:33:9
+         */
+
+        let count = 0;
         //checking if counter for the images is present or not
-        try{
+        try {
             const countLabelElement = await this.page.$('[aria-label="Preview"]');
             const countLabel = await countLabelElement.evaluate(el => el.textContent.trim());
             console.log(countLabel);
             const totalImages = countLabel.split('/')[1]; // Extract "2" from "1/2"
             console.log(`Total images: ${totalImages}`); // Output: "Total images: 2"
             count = parseInt(totalImages);
-        } catch(e){
-            console.log("no count label found");
-            console.log(e);
-            
+        } catch (e) {
+            console.log("No count span found");
+            // console.log(e); //uncomment for debugging
+
         }
         /**
          * get the preview span -> if it is present, use a function
          */
         const src = await img.evaluate(el => el.src); // Get the src attribute
-        console.log(' Original Image src:', src);
-        if(count == 0){
+        // console.log('Original Image src:', src); //for debugging
+        if (count == 0) {
             this.imgArray.push(src);
-        } else{
-            for(let i=0; i<count; i++){
+            console.log("single image detected: "+src);
+            
+        } else {
+            for (let i = 0; i < count; i++) {
                 let newSrc = src.replace(/_p0_/g, `_p${i}_`);
                 console.log(`newSrc: ${newSrc}`);
                 this.imgArray.push(newSrc);
             }
         }
         // this.imgArray.push(src);
+        await this.page.goBack();
 
 
     }
@@ -229,6 +251,13 @@ async clickSpoilerShow(){
 
     async getAllBookmarksInPage() {
         await this.clickBookmarks();
+
+        let currentUrl = await this.page.url();
+        console.log("Current URL: " + currentUrl);
+        //
+        let newUrl = currentUrl.concat("?p=4")
+        await this.page.goto(newUrl)
+
         await this.page.waitForSelector('li')
         await delay(3000) //added delay for other images to load
         let listItems = await this.page.$$('li');
@@ -254,54 +283,45 @@ async clickSpoilerShow(){
 
 
 
-             /* pausing ui based src fetching. if u want to continue, uncomment the next 2 lines ONLY
-             then debug and do whatever u want
-             current the readingworks is unabl to fetch all images. show all is working fine  
-             */
+            /* pausing ui based src fetching. if u want to continue, uncomment the next 2 lines ONLY
+            then debug and do whatever u want
+            current the readingworks is unabl to fetch all images. show all is working fine  
+            */
             // await this.clickReadingWorks()
             // await this.clickShowAll()
-            for(let i=1;i<listItems.length;i++){
-            // Re-query the list item to ensure it's still valid
-            listItems = await this.page.$$('li');
-            const listItem = listItems[i];
-            if (!listItem) {
-                console.log(`List item at index ${i} is no longer available`);
-                continue;
+            for (let i = 1; i < listItems.length; i++) {
+                // Re-query the list item to ensure it's still valid
+                listItems = await this.page.$$('li');
+                const listItem = listItems[i];
+                if (!listItem) {
+                    console.log(`List item at index ${i} is no longer available`);
+                    continue;
+                }
+                console.log(`Clicking list item at index ${i}`);
+
+
+                await listItem.click();
+                await this.fetchOnlySrc();
+                await delay(2000);
+                console.log(await this.getImgArray());
+
+                await delay(3000);
             }
-            console.log(`Clicking list item at index ${i}`);
+
+            console.log("last image array length: " + (await this.getImgArray()).length);
+            const imgArray = await this.getImgArray();
+            if (imgArray.length > 0) {
+                console.log("Last image in array: " + imgArray[imgArray.length - 1]);
+            } else {
+                console.log("Image array is empty.");
+            }
             
-
-            await listItem.click();
-
-
-             // Wait for navigation or content update
-             //this is for the deleted or private artworks. we will be skipping those
-            //  try {
-            //     await Promise.race([
-            //         this.page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 5000 }),
-            //         this.page.waitForSelector('div[role="presentation"]', { timeout: 5000 }) // Wait for specific content
-            //     ]);
-            //     console.log(`Action detected for list item at index ${i}`);
-            // } catch (e) {
-            //     console.log(`No action detected for list item at index ${i}. Skipping...`);
-            //     continue; // Skip to the next list item
-            // }
-
-
-
-            await this.fetchOnlySrc();
-            await delay(2000);
-            console.log(await this.getImgArray());
-            await this.page.goBack();
-            await delay(3000);
-            }
-
             // await this.fetchSrc()
             // await delay(5000)
         } else {
             throw new Error("No list items found");
         }
-        await delay(10000)
+        // await delay(10000)
     }
 
 
