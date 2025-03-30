@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage.js";
 import delay from "./utils/delay.js";
 import ProfilePage from "./pages/ProfilePage.js";
 import { getUrlPath } from "./utils/commonMethods.js";
+import fs from 'fs';
 
 puppeteer.use(StealthPlugin())
 
@@ -31,12 +32,17 @@ const profileLink = process.env.PROFILE_URL;
         await loginPage.login(email,password);
         await profilePage.goToProfile();
         await profilePage.getAllBookmarksInPage()
+        let img = await profilePage.getImgArray()
+        fs.writeFileSync('imageUrls.json',JSON.stringify(img,null,2));
+        console.log('✅ Image URLs saved to imageUrls.json');
+
         // await delay(8000)
     } catch(e){
         console.log(e);
     } finally{
         console.log('Closing browser');
         await browser.close();
+
     }
 
 })()

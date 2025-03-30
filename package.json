@@ -2,6 +2,7 @@
   "name": "pixiv-scraper",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.8.4",
     "dotenv": "^16.4.7",
     "puppeteer": "^24.2.0",
     "puppeteer-extra": "^3.3.6",

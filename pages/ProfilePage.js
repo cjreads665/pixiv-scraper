@@ -55,17 +55,17 @@ export default class ProfilePage extends BasePage {
         return totalImages;
     }
 
-async detachedElementcollection(){
-    return this.detachedElements
-}
+    async detachedElementcollection() {
+        return this.detachedElements
+    }
 
-async getTotalWorks(){
-    await delay(2000)
-    const textContent = await this.page.$eval('h2 ~ div', el => el.textContent.trim());
+    async getTotalWorks() {
+        await delay(2000)
+        const textContent = await this.page.$eval('h2 ~ div', el => el.textContent.trim());
 
-    console.log(textContent); // Should print '1,884'
-    return parseNumberStringWithComma(textContent);
-}
+        console.log(textContent); // Should print '1,884'
+        return parseNumberStringWithComma(textContent);
+    }
 
 
     async fetchSrcForReadingWorks() {
@@ -197,11 +197,11 @@ async getTotalWorks(){
         if (canvasEl) {
             console.log("Canvas element detected. Skipping fetchOnlySrc.");
             console.log("going back to the previous page");
-            
+
             await this.page.goBack();
 
             return; //skip the function
-        } else if(!previewContainer){
+        } else if (!previewContainer) {
             console.log("Preview container not found. Skipping fetchOnlySrc.");
             return; //skip the function
         }
@@ -210,10 +210,10 @@ async getTotalWorks(){
         const img = await previewContainer?.$('img');
         const artName = await this.page.$('h1');
 
-        if(artName){
+        if (artName) {
             const artNameText = await artName.evaluate(el => el.textContent.trim());
             console.log(`Art name: ${artNameText}`);
-        } else{
+        } else {
             console.log("Art name not found. check index and find the image manually");
         }
         /**
@@ -229,7 +229,7 @@ async getTotalWorks(){
         try {
             const countLabelElement = await this.page.$('[aria-label="Preview"]');
             const countLabel = await countLabelElement.evaluate(el => el.textContent.trim());
-            console.log(countLabel);
+            // console.log(countLabel); //enable for debugging
             const totalImages = countLabel.split('/')[1]; // Extract "2" from "1/2"
             console.log(`Total images: ${totalImages}`); // Output: "Total images: 2"
             count = parseInt(totalImages);
@@ -245,8 +245,8 @@ async getTotalWorks(){
         // console.log('Original Image src:', src); //for debugging
         if (count == 0) {
             this.imgArray.push(src);
-            console.log("single image detected: "+src);
-            
+            console.log("single image detected: " + src);
+
         } else {
             for (let i = 0; i < count; i++) {
                 let newSrc = src.replace(/_p0_/g, `_p${i}_`);
@@ -271,83 +271,83 @@ async getTotalWorks(){
         let numberOfPages = Math.ceil(totalWorks / 48); // Divide totalWorks by 48 and round up to get the number of pages
 
         let currentUrl = await this.page.url();
-for(let j=1;j<=numberOfPages;j++){
-    let newUrl = currentUrl.concat(`?p=${j}`)
-    await this.page.goto(newUrl)
-    console.log("Current URL: " + newUrl);
-    console.log(`number of pages: ${numberOfPages}`);
-    console.log(`total works: ${totalWorks}`);
-    
-    await this.page.waitForSelector('li')
-    await delay(3000) //added delay for other images to load
-    let listItems = await this.page.$$('li');
-    if (listItems.length > 0) {
+        for (let j = 1; j <= numberOfPages; j++) {
+            let newUrl = currentUrl.concat(`?p=${j}`)
+            await this.page.goto(newUrl)
+            console.log("Current URL: " + newUrl);
+            console.log(`number of pages: ${numberOfPages}`);
+            console.log(`total works: ${totalWorks}`);
 
-        /**
-         * show all is not present in some multi-image arts
-         * instead of that, we show 'reading works' -> which opens the image view of pixiv.
-         * so we need to come up with solution to capture the pixiv preview images
-         * 
-         * console:
-         * document.querySelectorAll('div[dir="vert"]')[0].children[0]
-         * this is selecting the previews alright
-         * const firstChild = document.querySelectorAll('div[dir="vert"]')[0].children[0];
-            const images = firstChild.querySelectorAll('img'); // Select all <img> elements within the first child
-         * 
-         * https://stackoverflow.com/questions/69501961/cant-download-image-from-a-website-with-selenium-it-gives-403-error
-         * 
-         * HELL YEAH!! FOUND THE SOLUTION FROM THE ABOVE STACKOVERFLOW. 
-         * just pass referer as https://www.pixiv.net/ to the img srcs and you are good to go
-         */
+            await this.page.waitForSelector('li')
+            await delay(3000) //added delay for other images to load
+            let listItems = await this.page.$$('li');
+            if (listItems.length > 0) {
 
-
+                /**
+                 * show all is not present in some multi-image arts
+                 * instead of that, we show 'reading works' -> which opens the image view of pixiv.
+                 * so we need to come up with solution to capture the pixiv preview images
+                 * 
+                 * console:
+                 * document.querySelectorAll('div[dir="vert"]')[0].children[0]
+                 * this is selecting the previews alright
+                 * const firstChild = document.querySelectorAll('div[dir="vert"]')[0].children[0];
+                    const images = firstChild.querySelectorAll('img'); // Select all <img> elements within the first child
+                 * 
+                 * https://stackoverflow.com/questions/69501961/cant-download-image-from-a-website-with-selenium-it-gives-403-error
+                 * 
+                 * HELL YEAH!! FOUND THE SOLUTION FROM THE ABOVE STACKOVERFLOW. 
+                 * just pass referer as https://www.pixiv.net/ to the img srcs and you are good to go
+                 */
 
 
-        /* pausing ui based src fetching. if u want to continue, uncomment the next 2 lines ONLY
-        then debug and do whatever u want
-        current the readingworks is unabl to fetch all images. show all is working fine  
-        */
-        // await this.clickReadingWorks()
-        // await this.clickShowAll()
-        for (let i = 1; i < listItems.length; i++) {
-            // Re-query the list item to ensure it's still valid
-            listItems = await this.page.$$('li');
-            const listItem = listItems[i];
-            if (!listItem) {
-                console.log(`List item at index ${i} and page ${j} is no longer available`);
-                let k = `Skipping list item at index ${i} and page ${j} due to unavailability.`
-                console.log(k);
 
-                listItems = await this.page.$$('li'); // Re-query the list items to ensure the loop continues correctly
-                continue;
+
+                /* pausing ui based src fetching. if u want to continue, uncomment the next 2 lines ONLY
+                then debug and do whatever u want
+                current the readingworks is unabl to fetch all images. show all is working fine  
+                */
+                // await this.clickReadingWorks()
+                // await this.clickShowAll()
+                for (let i = 1; i < listItems.length; i++) {
+                    // Re-query the list item to ensure it's still valid
+                    listItems = await this.page.$$('li');
+                    const listItem = listItems[i];
+                    if (!listItem) {
+                        console.log(`List item at index ${i} and page ${j} is no longer available`);
+                        let k = `Skipping list item at index ${i} and page ${j} due to unavailability.`
+                        console.log(k);
+
+                        listItems = await this.page.$$('li'); // Re-query the list items to ensure the loop continues correctly
+                        continue;
+                    }
+                    console.log(`Clicking list item at index ${i} and page ${j}`);
+                    console.log(`number of li in this page: ${listItems.length}`);
+
+
+                    await listItem.click();
+                    await this.fetchOnlySrc();
+                    await delay(2000);
+                    console.log(await this.getImgArray());
+
+                    await delay(3000);
+                }
+
+                console.log("last image array length: " + (await this.getImgArray()).length);
+                const imgArray = await this.getImgArray();
+                if (imgArray.length > 0) {
+                    console.log("Last image in array: " + imgArray[imgArray.length - 1]);
+                    console.log("detached elements: " + await this.detachedElements.length);
+                } else {
+                    console.log("Image array is empty.");
+                }
+
+                // await this.fetchSrc()
+                // await delay(5000)
+            } else {
+                throw new Error("No list items found");
             }
-            console.log(`Clicking list item at index ${i} and page ${j}`);
-            console.log(`number of list items in this page: ${listItems.length}`);
-            
-
-            await listItem.click();
-            await this.fetchOnlySrc();
-            await delay(2000);
-            console.log(await this.getImgArray());
-
-            await delay(3000);
         }
-
-        console.log("last image array length: " + (await this.getImgArray()).length);
-        const imgArray = await this.getImgArray();
-        if (imgArray.length > 0) {
-            console.log("Last image in array: " + imgArray[imgArray.length - 1]);
-            console.log("detached elements: " + await this.detachedElements.length);
-        } else {
-            console.log("Image array is empty.");
-        }
-        
-        // await this.fetchSrc()
-        // await delay(5000)
-    } else {
-        throw new Error("No list items found");
-    }
-}
 
 
         // await delay(10000)
